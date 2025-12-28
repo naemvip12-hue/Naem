@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Task Pay</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- YOUR ORIGINAL MONETAG SDK -->
+<script src="//libtl.com/sdk.js"
+        data-zone="10387801"
+        data-sdk="show_10387801"></script>
+
+<!-- Telegram WebApp -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+body{
+  margin:0;
+  padding:20px;
+  background:#000;
+  color:#fff;
+  font-family:Arial;
+  text-align:center;
+}
+.box{
+  background:#111;
+  padding:20px;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+button{
+  width:100%;
+  padding:15px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+.ad{background:#0d6efd;color:#fff;}
+.wd{background:#198754;color:#fff;}
+.ref{background:#6f42c1;color:#fff;}
+</style>
+</head>
+
+<body>
+
+<h2>💰 Task Pay</h2>
+<p>@Task_Pay_Bot</p>
+
+<div class="box">
+  <h3 id="bal">USDT 0.00</h3>
+  <p id="count">Ads Today: 0</p>
+</div>
+
+<button class="ad" onclick="watchAd()">▶ Watch Ad</button>
+<button class="wd" onclick="withdraw()">💳 Withdraw</button>
+<button class="ref" onclick="ref()">🔗 Referral</button>
+
+<script>
+/* ===== TELEGRAM ===== */
+const tg = window.Telegram.WebApp;
+tg.ready();
+
+const user = tg.initDataUnsafe.user;
+
+/* ===== DATA ===== */
+let bal = Number(localStorage.getItem("bal")) || 0;
+let ads = Number(localStorage.getItem("ads")) || 0;
+let day = localStorage.getItem("day") || new Date().toDateString();
+
+if(day !== new Date().toDateString()){
+  ads = 0;
+  day = new Date().toDateString();
+}
+
+update();
+
+/* ===== FUNCTIONS ===== */
+function update(){
+  document.getElementById("bal").innerText =
+    "USDT " + (bal/100).toFixed(2);
+  document.getElementById("count").innerText =
+    "Ads Today: " + ads;
+}
+
+function watchAd(){
+  if(typeof show_10387801 !== "function"){
+    alert("Ad not ready");
+    return;
+  }
+
+  show_10387801().then(()=>{
+    ads++;
+    bal += 1;
+    save();
+    update();
+  }).catch(()=>{
+    alert("No ad available");
+  });
+}
+
+function withdraw(){
+  if(bal < 1000){
+    alert("Minimum withdraw 10 USDT");
+    return;
+  }
+
+  tg.sendData(
+`WITHDRAW
+Bot: @Task_Pay_Bot
+ID: ${user.id}
+User: ${user.username ? "@"+user.username : user.first_name}
+Amount: ${(bal/100).toFixed(2)} USDT`
+  );
+
+  bal = 0;
+  save();
+  update();
+}
+
+function ref(){
+  const link = `https://t.me/Task_Pay_Bot?start=${user.id}`;
+  navigator.clipboard.writeText(link);
+  alert("Referral copied");
+}
+
+function save(){
+  localStorage.setItem("bal", bal);
+  localStorage.setItem("ads", ads);
+  localStorage.setItem("day", day);
+}
+</script>
+
+</body>
+</html>
